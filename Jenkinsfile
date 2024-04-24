@@ -36,7 +36,7 @@ node {
             // -------------------------------------------------------------------------
 
             stage('Authorize DevHub') {
-                rc = command "${toolbelt}/sf org login jwt --instance-url ${SF_INSTANCE_URL} --client-id ${SF_CONSUMER_KEY} --username ${SF_USERNAME} --jwt-key-file ${server_key_file} --set-default-dev-hub --alias HubOrg"
+                rc = command "${toolbelt} sf org login jwt --instance-url ${SF_INSTANCE_URL} --client-id ${SF_CONSUMER_KEY} --username ${SF_USERNAME} --jwt-key-file ${server_key_file} --set-default-dev-hub --alias HubOrg"
                 if (rc != 0) {
                     error 'Salesforce dev hub org authorization failed.'
                 }
@@ -48,7 +48,7 @@ node {
             // -------------------------------------------------------------------------
 
             stage('Create Test Scratch Org') {
-                rc = command "${toolbelt}/sf org create scratch --target-dev-hub HubOrg --set-default --definition-file config/project-scratch-def.json --alias ciorg --wait 10 --duration-days 1"
+                rc = command "${toolbelt} sf org create scratch --target-dev-hub HubOrg --set-default --definition-file config/project-scratch-def.json --alias ciorg --wait 10 --duration-days 1"
                 if (rc != 0) {
                     error 'Salesforce test scratch org creation failed.'
                 }
@@ -60,7 +60,7 @@ node {
             // -------------------------------------------------------------------------
 
             stage('Display Test Scratch Org') {
-                rc = command "${toolbelt}/sf org display --target-org ciorg"
+                rc = command "${toolbelt} sf org display --target-org ciorg"
                 if (rc != 0) {
                     error 'Salesforce test scratch org display failed.'
                 }
@@ -72,7 +72,7 @@ node {
             // -------------------------------------------------------------------------
 
             stage('Push To Test Scratch Org') {
-                rc = command "${toolbelt}/sf project deploy start --target-org ciorg"
+                rc = command "${toolbelt} sf project deploy start --target-org ciorg"
                 if (rc != 0) {
                     error 'Salesforce push to test scratch org failed.'
                 }
@@ -84,7 +84,7 @@ node {
             // -------------------------------------------------------------------------
 
             stage('Run Tests In Test Scratch Org') {
-                rc = command "${toolbelt}/sf apex run test --target-org ciorg --wait 10 --result-format tap --code-coverage --test-level ${TEST_LEVEL}"
+                rc = command "${toolbelt} sf apex run test --target-org ciorg --wait 10 --result-format tap --code-coverage --test-level ${TEST_LEVEL}"
                 if (rc != 0) {
                     error 'Salesforce unit test run in test scratch org failed.'
                 }
@@ -96,7 +96,7 @@ node {
             // -------------------------------------------------------------------------
 
             stage('Delete Test Scratch Org') {
-                rc = command "${toolbelt}/sf org delete scratch --target-org installorg --no-prompt"
+                rc = command "${toolbelt} sf org delete scratch --target-org installorg --no-prompt"
                 if (rc != 0) {
                     error 'Salesforce test scratch org deletion failed.'
                 }
@@ -109,9 +109,9 @@ node {
 
             stage('Create Package Version') {
                 if (isUnix()) {
-                    output = sh returnStdout: true, script: "${toolbelt}/sf package version create --package ${PACKAGE_NAME} --installation-key-bypass --wait 10 --json --target-dev-hub HubOrg"
+                    output = sh returnStdout: true, script: "${toolbelt} sf package version create --package ${PACKAGE_NAME} --installation-key-bypass --wait 10 --json --target-dev-hub HubOrg"
                 } else {
-                    output = bat(returnStdout: true, script: "${toolbelt}/sf package version create --package ${PACKAGE_NAME} --installation-key-bypass --wait 10 --json --target-dev-hub HubOrg").trim()
+                    output = bat(returnStdout: true, script: "${toolbelt} sf package version create --package ${PACKAGE_NAME} --installation-key-bypass --wait 10 --json --target-dev-hub HubOrg").trim()
                     output = output.readLines().drop(1).join(" ")
                 }
 
@@ -134,7 +134,7 @@ node {
             // -------------------------------------------------------------------------
 
             stage('Create Package Install Scratch Org') {
-                rc = command "${toolbelt}/sf org create scratch --target-dev-hub HubOrg --set-default --definition-file config/project-scratch-def.json --alias installorg --wait 10 --duration-days 1"
+                rc = command "${toolbelt} sf org create scratch --target-dev-hub HubOrg --set-default --definition-file config/project-scratch-def.json --alias installorg --wait 10 --duration-days 1"
                 if (rc != 0) {
                     error 'Salesforce package install scratch org creation failed.'
                 }
@@ -146,7 +146,7 @@ node {
             // -------------------------------------------------------------------------
 
             stage('Display Install Scratch Org') {
-                rc = command "${toolbelt}/sf org display --target-org installorg"
+                rc = command "${toolbelt} sf org display --target-org installorg"
                 if (rc != 0) {
                     error 'Salesforce install scratch org display failed.'
                 }
@@ -158,7 +158,7 @@ node {
             // -------------------------------------------------------------------------
 
             stage('Install Package In Scratch Org') {
-                rc = command "${toolbelt}/sf package install --package ${PACKAGE_VERSION} --target-org installorg --wait 10"
+                rc = command "${toolbelt} sf package install --package ${PACKAGE_VERSION} --target-org installorg --wait 10"
                 if (rc != 0) {
                     error 'Salesforce package install failed.'
                 }
@@ -170,7 +170,7 @@ node {
             // -------------------------------------------------------------------------
 
             stage('Run Tests In Package Install Scratch Org') {
-                rc = command "${toolbelt}/sf apex run test --target-org installorg --result-format tap --code-coverage --test-level ${TEST_LEVEL} --wait 10"
+                rc = command "${toolbelt} sf apex run test --target-org installorg --result-format tap --code-coverage --test-level ${TEST_LEVEL} --wait 10"
                 if (rc != 0) {
                     error 'Salesforce unit test run in pacakge install scratch org failed.'
                 }
@@ -182,7 +182,7 @@ node {
             // -------------------------------------------------------------------------
 
             stage('Delete Package Install Scratch Org') {
-                rc = command "${toolbelt}/sf org delete scratch --target-org installorg --no-prompt"
+                rc = command "${toolbelt} sf org delete scratch --target-org installorg --no-prompt"
                 if (rc != 0) {
                     error 'Salesforce package install scratch org deletion failed.'
                 }
